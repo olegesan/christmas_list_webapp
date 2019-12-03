@@ -1,0 +1,163 @@
+{%extends './base.html'%}
+{%block title%} Christmas List App{%endblock%}
+{%block h1%}Christmas List App {%endblock%}
+{%block body%}
+<div class='col-5-sm col-7-lg d-flex flex-column'>
+    <div class="jumbotron">
+        <h2>Account: {{user}}</h2>
+        <h2>Family Name: {{user.profile.family.last_name}}</h2>
+        <h2> Status:{%if user.profile.family_head%} Family Head{%else%}Family Member{%endif%}</h2>
+        <div>Family Code: {{user.profile.family.family_code}}</div>
+        <div>Gifts allowed: {{user.profile.family.number_of_gifts}}</div>
+        <div class='display-'> Gifts submitted : <span>{{user.profile.gifts.count}}</span> {% if user.profile.gifts.count == 0%}
+        <span id='add_gifts' class='add_gifts btn btn-warning'>Add Gifts</span>{%endif%}
+        <!-- <span id='some_button' class='btn btn-large btn-success'>some button</span> -->
+        </div>
+    </div>
+    {%if user.profile.family_head%}
+    <div class="card mb-4">
+            <div class="card-body">
+              <h3 class="card-header mb-2">Family gifts: {{user.profile.family.gifts_submitted}}/{{user.profile.family.gifts_max}}</h3>
+              {%if user.profile.family.gifts_submitted !=  user.profile.family.gifts_max%}
+              <div class="card-body">
+                    <h5 class="card-title">Waiting on:</h5>
+                    <ul class="list-group list-group-flush">
+                        {%for member in user.profile.family.members.all%}
+                        {%if member.profile.gifts.count == 0 %}
+                        <li class="list-group-item">{{member.profile.name}}</li>
+                        {%endif%}
+                        {%endfor%}
+                    </ul>   
+              </div>
+              {%else%}
+              <button  href = '' id='random_gifts' class="btn btn-success" {%if user.profile.assigned_gifts.count > 0%} disabled {%endif%}>Random Gifts</button>
+              <button  href = '' id='reveal_names' class="btn btn-danger" {%if user.profile.family.reveal_names%}disabled{%endif%}>Reveal Names</button>
+              {%endif%}
+            </div>
+          </div>
+    {%endif%}
+    {%if user.profile.family.reveal_names%}
+    <div class="card mb-2">
+            <div class="card-body text-center">
+              <h4 class="card-title">Assigned gifts</h4>
+              {%for gift in user.profile.assigned_gifts.all%}
+              <div class='container d-flex justify-content-between list-group-item'>
+                  <div >{{gift.gift_name}}</div>
+                  <div >{{gift.receiver}}</div>
+              </div>
+              {%endfor%}
+            <!-- can potentially add an edit button -->
+              <!-- <a href="#" class="card-link">Another link</a> -->
+            </div>
+    </div>
+    {%elif user.profile.assigned_gifts.count > 0%}
+    <div class="card mb-2">
+            <div class="card-body text-center">
+              <h4 class="card-title">Assigned gifts</h4>
+              {%for gift in user.profile.assigned_gifts.all%}
+              <div class="list-group-item" >{{gift.gift_name}}</div>
+              {%endfor%}
+            <!-- can potentially add an edit button -->
+              <!-- <a href="#" class="card-link">Another link</a> -->
+            </div>
+    </div>
+    {%endif%}
+    {%if user.profile.family.reveal_names%}
+    <div class="card mb-2">
+            <div class="card-body text-center">
+              <h4 class="card-title ">My gifts</h4>
+              {%for gift in user.profile.gifts.all%}
+              <div class="container d-flex justify-content-between list-group-item">
+                  <div  >{{gift.gift_name}}</div>
+                  <div  >{{gift.giver}}</div>
+              </div>
+              {%endfor%}
+            <!-- can potentially add an edit button -->
+              <!-- <a href="#" class="card-link">Another link</a> -->
+            </div>
+    </div>
+    {%elif user.profile.gifts.count > 0%}
+    <div class="card mb-2">
+            <div class="card-body text-center">
+              <h4 class="card-title">My gifts</h4>
+              {%for gift in user.profile.gifts.all%}
+              <div class="list-group-item" >{{gift.gift_name}}</div>
+              {%endfor%}
+            <!-- can potentially add an edit button -->
+              <!-- <a href="#" class="card-link">Another link</a> -->
+            </div>
+    </div>
+    {%endif%}
+    <div class="family_memebers mb-5">
+        <div class='display-4'> Family Members: {{request.user.profile.family.members.count}}</div>
+        {%for member in user.profile.family.members.all%}
+       
+        {%if member.profile.assigned_gifts.count > 0 and user.profile.family_head%}
+        <div class="conteiner card card-body mb-2 ">
+            <h4 class="card-title">{{member.profile.name}}</h4>
+            <div class="row card flex-row justify-content-around">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gift</th>
+                            <th>From</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {%for gift in member.profile.gifts.all%}
+                        <tr>
+                                <td>{{gift.gift_name}}</td>
+                                <td>{{gift.giver}}</td>
+                            </tr>
+                        {%endfor%}
+                    </tbody>
+                        <!-- <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
+                </table>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gift</th>
+                            <th>To</th>
+                        </tr>
+                    </thead>
+                    <tbody>{%for gift in member.profile.assigned_gifts.all%}
+                        <tr>
+                            <td>{{gift.gift_name}}</td>
+                            <td>{{gift.receiver}}</td>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+           
+        </div>
+        {%elif member.profile.gifts.count > 0 and user.profile.family_head%}
+            <div class="container">
+                <div class="card mb-2">
+                    <div class=" text-center">
+                    <h4 class="card-title">{{member.profile.name}}</h4>
+                    <ul class="list-group list-group-flush">
+                    <!-- <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
+                    {%for gift in member.profile.gifts.all%}
+                    <div class="list-group-item">{{gift.gift_name}}</div>
+                    {%endfor%}
+                    </ul>
+                    <!-- <a href="#" class="card-link">Card link</a> -->
+                    <!-- can potentially add an edit button -->
+                    <!-- <a href="#" class="card-link">Another link</a> -->
+                    </div>
+                </div>
+            </div>
+            {%elif user.profile.family_head%}
+            <div class="family_member mb-2">{{member.profile.name}} - no gifts submitted</div>
+            {% else %}
+            <div class="family_member mb-2">{{member.profile.name}}</div>
+            {%endif%}
+        {%endfor%}
+    </div>
+    <div class="modal">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+{%endblock%}

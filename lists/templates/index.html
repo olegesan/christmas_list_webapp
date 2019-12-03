@@ -1,0 +1,18 @@
+{%extends './base.html'%}
+{%block title%} Christmas List App{%endblock%}
+{%block h1%}Christmas List App {%endblock%}
+{%block body%}
+{%if user.is_authenticated%}<div>User: {{user}} </div>{%endif%}
+<div class='col-5-sm col-7-lg d-flex flex-column'>
+    {%if user.is_authenticated%}
+    <a href='/{{user}}' class="btn btn-success btn-lg btn-block">Profile</a>
+    <a href='/logout' class="btn btn-success btn-lg btn-block">Log out</a>
+    
+    {%else%}
+    <a href='/signup/start_family'class="btn btn-primary btn-lg btn-block">Start a Family List</a>
+    <a href='/signup/join_family' class="btn btn-warning btn-lg btn-block">Join a Family List</a>
+    <a href='/login' class="btn btn-success btn-lg btn-block">Log in</a>
+    {%endif%}
+</div>
+{%endblock%}
+

@@ -1,0 +1,47 @@
+{%extends '../base.html'%}
+{%block title%} Christmas List App{%endblock%}
+{%block h1%}Christmas List App {%endblock%}
+{%block body%}
+<div class='col-5-sm col-7-lg d-flex flex-column'>
+        <h1>Start Family List</h1>
+        <form  class='col-sm-7 col-lg-12 col-12 col-md-6'>
+            {% csrf_token%} 
+            <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input type="text" class='form-control' placeholder="first name" name='first_name'>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input type="text" class='form-control' placeholder="last name" name='last_name'>
+            </div>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class='form-control' placeholder="username" name='username' required>
+            </div>
+            <div class='form-group'>
+                    <label for="password">Password:</label>
+                    <input type="password" class='form-control' placeholder="password" name='password' required>
+            </div>
+           
+            <div class='form-group'>
+                    <label for="email">E-mail:</label>
+                    <input type="email" class='form-control' placeholder="name@email.com" name='email'>
+            </div>
+            <div class='form-group'>
+                    <label for="family_name">Family Name:</label>
+                    <input type="text" class='form-control' placeholder="family name" name='family_name' required>
+            </div>
+            <div class='form-group'>
+                    <label for="family_code">Family code:</label>
+                    <input type="text" class='form-control' disabled name='family_code'>
+            </div>
+            <div class='form-group'>
+                    <label for="number_of_gifts">Number of gifts</label>
+                    <input type="number" class='form-control' name='number_of_gifts'>
+            </div>
+            <div class='form-group'>
+                    <input class='btn submit btn-success btn-lg'value="Start">
+            </div>
+        </form>
+    </div>
+{%endblock%}
