@@ -1,6 +1,41 @@
 body{
-    background-color: aquamarine;
+    background-color: rgb(141, 203, 78);
 }
+
+table{
+
+  width:100%;
+  text-align: center;
+}
+th{
+  width:50%;
+}
+tr{
+  border-bottom: 1px solid rgba(0,0,0,.125);
+}
+thead{
+  font-size:1.2em;
+  background-color: #eee9;
+}
+.btn{
+  margin-top:0.5em
+}
+#aval_gifts{
+  max-height:200px;
+  overflow-y: auto;
+  /* width:100% */
+}
+.gift_bubble{
+  margin:4px;
+  border:1px rgb(252, 87, 87) solid;
+  padding:6px;
+  border-radius: 25px;
+}
+
+
+
+
+
 
 /* The Modal (background) */
 .modal {

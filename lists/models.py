@@ -53,7 +53,16 @@ class Profile(models.Model):
             return f'{self.user}'
     def __str__(self):
         return f'{self.user}, family: {self.family}'
-
+    def get_assigned_gifts(self):
+        output = []
+        for gift in self.assigned_gifts.all():
+            output.append([gift.id, gift.gift_name])
+        return output
+    def get_own_gifts(self):
+        output = []
+        for gift in self.gifts.all():
+            output.append([gift.id, gift.gift_name])
+        return output
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

@@ -173,6 +173,7 @@ $('.submit').click(function(){
         })
         .done(function(data){
             location.reload(true)
+            
         })
     }
  })
@@ -201,6 +202,93 @@ $('#reveal_names').click(function(){
     $.ajax({
         url:'reveal_names',
         method:'POST',
+        data:{
+            'family_id':family_id,
+            'user_id':user_id,
+        }
+    })
+    .done(function(data){
+        location.reload(true)
+    })
+})
+$('#hide_names').click(function(){
+    $.ajax({
+        url:'hide_names',
+        method:'POST',
+        data:{
+            'family_id':family_id,
+            'user_id':user_id,
+        }
+    })
+    .done(function(data){
+        location.reload(true)
+    })
+})
+$('#assign_gifts').click(function(){
+    console.log(family_id)
+    console.log(user_id)
+    $.ajax({
+        url:'assign_gifts',
+        method:'GET',
+        data:{
+            'family_id':family_id,
+            'user_id':user_id,
+        }
+    })
+    .done(function(data1){
+        data=JSON.parse(data1)
+
+        // getting the gifts HTML
+        availible_gifts = ''
+        availible_gifts_choice = ''
+        for(i=0; i<data['availible_gifts'].length;i++){
+            availible_gifts_choice+=`<option value =${data['availible_gifts'][i][0]}>${data['availible_gifts'][i][1]}</option>`
+            availible_gifts+=`<div class='gift_bubble'>${data['availible_gifts'][i][1]}</div>`
+        }
+        // 
+
+        // getting the members HTML
+        members = ''
+        for(i=0;i<data['member_ids'].length;i++){
+            member_id = data['member_ids'][i]
+            name = data['family_members'][member_id]['name']
+            members+= `<option val=${member_id}>${name}</option>`
+        }
+        // 
+
+        // getting gift slots
+        gift_slots=''
+        for(i = 1; i<=data['number_of_gifts'];i++){
+            gift_slots+= ` <select id='gift_${i}'>
+                ${availible_gifts_choice}
+            </select>`
+        }
+        modal.toggle()
+        $('.modal-content').html(`
+        <h2> Availible Gifts:</h2>
+        <div class='d-flex flex-col flex-wrap' id='aval_gifts'>
+        ${availible_gifts}
+        </div>
+        <select>
+        ${availible_gifts_choice}
+        </select>
+        <h3>Member:</h3>
+        <select>
+        ${members}
+        </select>
+        ${gift_slots}
+        <span class='col-5 cancel btn btn-danger'>cancel</span>
+        <span class='col-5 save btn btn-success'>save</span>
+        `)
+        
+    })
+
+})
+$('#clear_gifts').click(function(){
+
+    $.ajax({
+        url:'assign_gifts',
+        method: "DELETE",
         data:{
             'family_id':family_id,
             'user_id':user_id,
