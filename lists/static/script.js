@@ -235,17 +235,17 @@ function upd_aval_gifts_div(user_id){
         }
     }
     modal.find("#aval_gifts").html(div_html)
+    return div_html
 }
 
 //adding options for select Gift slots
 function add_options_select_gifts(gift_id, selected_slot){
     if(gift_id!='None'){
+        console.log(selected_slot)
         gift_name = data['gifts'][gift_id][1]
         option = `<option value=${gift_id}>${gift_name}</option>`
-        modal.find('.gift_slot').each(function(){
-            if($(this).val()==selected_slot.val()){
-            }
-            else{
+        modal.find(`.gift_slot`).each(function(){
+            if(!$(this).is(selected_slot)){
                 $(this).append(option)
             }
         })
@@ -266,7 +266,7 @@ function del_options_selected_gifts(gift_id){
 function get_gift_slots(user_id){
     own_gifts = data['family_members'][user_id]['own_gifts']
     assigned_gifts = data['family_members'][user_id]['assigned_gifts']
-    available_gifts = data['available_gifts']
+    available_gifts = data['available_gifts'].filter(arr=> arr[2]!=user_id)
     gifts= data['gifts']
     selected_attr_gifts=[]
     select_element = ''
@@ -275,12 +275,13 @@ function get_gift_slots(user_id){
             select_element+=`<select class='gift_slot'>`
             // checking if gifts have been already assigned
             // if assigned, then just show assigned select option + Not Assigned slot, to disassign the gift
-            if(assigned_gifts.length!=data['number_of_gifts']){
-                console.log('Assigned gifts number:'+assigned_gifts.length+' Total Gifts:'+data['number_of_gifts'])
+
+            //some gifts have been assigned, some are still available (probably user re-assigning them)
+            if(assigned_gifts.length>0 & available_gifts.length>0){
                 if(b<assigned_gifts.length){
                     console.log(`Selected gift: ${assigned_gifts}`)
-                    select_element+=`<option value =${assigned_gifts[b][0]} selected>${assigned_gifts[b][1]}</option>` 
                     select_element+=`<option value ='None'>(Not Assigned)</option>`
+                    select_element+=`<option value =${assigned_gifts[b][0]} selected>${assigned_gifts[b][1]}</option>` 
                     selected_attr_gifts.push(assigned_gifts[b][0])
                 }
                 else{
@@ -288,6 +289,7 @@ function get_gift_slots(user_id){
                 }
                 for(i=0; i<available_gifts.length;i++){
                     if(available_gifts[i][2]!=user_id){
+                        console.log('first condition, for loop with available gifts')
                         select_element+=`<option value =${available_gifts[i][0]}>${available_gifts[i][1]}</option>`
                 }
             }
@@ -295,8 +297,8 @@ function get_gift_slots(user_id){
             }
             else if(assigned_gifts.length==data['number_of_gifts']){
                 console.log('no aval gifts')
-                select_element+=`<option value =${assigned_gifts[b][0]} selected>${assigned_gifts[b][1]}</option>`
                 select_element+=`<option value ='None'>(Not Assigned)</option>`
+                select_element+=`<option value =${assigned_gifts[b][0]} selected>${assigned_gifts[b][1]}</option>`
             }
             // if gifts unassigned, then look through all availible gifts and give them all as options, except person's own gifts
             else{
@@ -371,7 +373,7 @@ $('#assign_gifts').click(function(){
         $('.modal-content').html(`
         <h2> Available Gifts:</h2>
         <div class='d-flex flex-col flex-wrap mb-2' id='aval_gifts'>
-        ${available_gifts}
+        ${upd_aval_gifts_div(data['member_ids'][0])}
         </div>
         <div class='container row'>
         <label class='h4'>Member:</label>
@@ -471,21 +473,17 @@ $('#clear_gifts').click(function(){
         location.reload(true)
     })
 })
-// $('#some_button').click(function(){
-//     values = [2,34,5,3, 'soemthing else', 'some gifts']
-//     for(i=0; i<10; i++){
-//         values.push(i)
-//     }
-//     console.log(values)
-//     // jsonText = JSON.stringify(values)
-//     $.ajax({
-//         url:'some_button',
-//         method: "POST",
-//         data:{
-//             'values':values
-//         }
-//     })
-//     .done(function(data){
-//         console.log(data)
-//     })
-// })
+modal.on('click','.save', function(){
+    $.ajax({
+        url:'assign_gifts',
+        method:'POST',
+        data:{
+            'family_id':family_id,
+            'user_id':user_id,
+            'data':JSON.stringify(data)
+        }
+    })
+    .done(function(){
+        console.log('save')
+    })
+})

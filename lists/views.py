@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from .models import Profile, Gift, Family
-import random
+import random, json
 # Create your views here.
 def index(request):
     return render(request, './index.html')
@@ -240,49 +240,48 @@ def assign_gifts(request, user=None):
         return HttpResponse(response, status=200)
         # availible_gifts = 
     elif request.method == 'POST':
-        print('post')
+        # data = QueryDict(request.body)
+        data = json.loads(request.POST['data'])
+        family_id = request.POST['family_id']
+        family = Family.objects.get(pk=family_id)
+        # print(data)
+        for member in family.members.all():
+            # check if the person was assigned max amount of gifts
+                for gift_info in data['family_members'][f'{member.id}']['assigned_gifts']:
+                    gift = Gift.objects.get(pk=gift_info[0])
+                    gift.giver = member
+                    gift.save()
+                    if gift not in member.profile.assigned_gifts.all():
+                        member.profile.assigned_gifts.add(gift)
+                        member.save()
+
+        # unassigning all available gifts
+        for gift in data['available_gifts']:
+            gift = Gift.objects.get(pk=gift[0])
+            try:
+                giver = gift.giver
+                giver.profile.assigned_gifts.remove(gift)
+                gift.giver = None
+                giver.save()
+            except:
+                pass
+            gift.save()
+        if data['available_gifts']:
+            family.gifts_assigned=False
+        else:
+            family.gifts_assigned=True
+        family.save()
     elif request.method == "DELETE":
-         data = QueryDict(request.body)
-         print(data)
-         family_id = data['family_id']
-         family = Family.objects.get(pk=family_id)
-         for member in family.members.all():
-             for gift in member.profile.assigned_gifts.all():
+        data = QueryDict(request.body)
+        print(data)
+        family_id = data['family_id']
+        family = Family.objects.get(pk=family_id)
+        for member in family.members.all():
+            for gift in member.profile.assigned_gifts.all():
                 gift_id = gift.id
                 gift.giver=None
                 gift.save()
                 member.profile.assigned_gifts.remove(gift_id)
-    family.gifts_assigned=False
-    family.save()
+        family.gifts_assigned=False
+        family.save()
     return HttpResponse(status=200)
-# def some_button(request):
-#     if request.is_ajax():
-#         values = request.POST.getlist('values[]')
-#         for value in values:
-#             print(value)
-#         print(values)
-
-# try something new
-# def random_gifts(request, user=None):
-#     data = QueryDict(request.body)
-#     # print(request.body)
-#     family_id = data['family_id']
-#     family = Family.objects.get(pk=family_id)
-#     family_gifts =  family.family_gifts.all()
-#     # family_gifts_ids = list()
-#     family_members = family.members.all()
-#     family_check = {}
-#     for member in family_members:
-#         family_check[member]= {}
-#         for other_member in family_members:
-#             if other_member != member:
-#                 family_check[member][other_member]=0
-#     for gift in family_gifts:
-#         checker = True
-#         while checker:
-#             member = random.choice(family_members.all())
-#             try:
-#                 member.gifts.get(pk=gift.id)
-#             except:
-#             checker = False
-#     number_of_gifts = family.number_of_gifts
