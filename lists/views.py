@@ -186,6 +186,8 @@ def random_gifts(request, user=None):
                         gift.giver = giver
                         gift.save()
                         giver.profile.assigned_gifts.add(gift)
+    family.gifts_assigned = True
+    family.save()
     return HttpResponse(status=200)
 def reveal_names(request, user=None):
     data = QueryDict(request.body)
@@ -215,12 +217,10 @@ def assign_gifts(request, user=None):
         # print(dir(request.GET))
         # print(data)
         family = Family.objects.get(pk=family_id)
-        gifts = family.family_gifts.all()
-        print(gifts)
+        gifts = family.get_family_gifts()
         member_ids = []
-        availible_gifts = []
-        for gift in gifts.filter(giver = None):
-            availible_gifts.append([gift.id, gift.gift_name])
+        available_gifts = family.get_aval_gifts()
+        print(available_gifts)
         family_members = {}
         for member in family.members.all():
             family_members[member.id]={}
@@ -231,11 +231,11 @@ def assign_gifts(request, user=None):
             member_ids.append(member.id)
         data = {
             'family_members':family_members,
-            'availible_gifts':availible_gifts,
+            'available_gifts':available_gifts,
             'number_of_gifts':family.number_of_gifts,
-            'member_ids':member_ids
+            'member_ids':member_ids,
+            'gifts':gifts,
         }
-        print(data)
         response = JsonResponse(data)
         return HttpResponse(response, status=200)
         # availible_gifts = 
@@ -252,6 +252,8 @@ def assign_gifts(request, user=None):
                 gift.giver=None
                 gift.save()
                 member.profile.assigned_gifts.remove(gift_id)
+    family.gifts_assigned=False
+    family.save()
     return HttpResponse(status=200)
 # def some_button(request):
 #     if request.is_ajax():

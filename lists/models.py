@@ -20,6 +20,7 @@ class Family (models.Model):
     family_gifts = models.ManyToManyField(Gift, blank = True)
     family_head = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     reveal_names = models.BooleanField(default=False)
+    gifts_assigned=models.BooleanField(default=False)
     def __str__(self):
         return f' {self.id}: {self.last_name}, code: {self.family_code},head:{self.family_head}, gifts allowed: {self.number_of_gifts}, memebers:{self.members.all()}, gifts:{self.family_gifts.all()}'
     def gifts_submitted(self):
@@ -36,6 +37,22 @@ class Family (models.Model):
             return True
         else:
             return False
+    def get_family_gifts(self):
+        output = {}
+        if self.gifts_assigned:
+            for gift in self.family_gifts.all():
+                output[gift.id] = [gift.id, gift.gift_name, gift.receiver.id, gift.giver.id]
+        else:
+            for gift in self.family_gifts.all():
+                output[gift.id] = [gift.id, gift.gift_name, gift.receiver.id]
+        return output
+    def get_aval_gifts(self):
+        output = []
+        # room for improvement to rewrite logic for availible gifts 
+        for gift in self.family_gifts.all():
+                if gift.giver == None:
+                    output.append([gift.id, gift.gift_name, gift.receiver.id])
+        return output
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
     family = models.ForeignKey(Family, on_delete=models.SET_NULL, blank= True, null=True)
@@ -56,12 +73,12 @@ class Profile(models.Model):
     def get_assigned_gifts(self):
         output = []
         for gift in self.assigned_gifts.all():
-            output.append([gift.id, gift.gift_name])
+            output.append([gift.id, gift.gift_name, gift.receiver.id, self.id])
         return output
     def get_own_gifts(self):
         output = []
         for gift in self.gifts.all():
-            output.append([gift.id, gift.gift_name])
+            output.append([gift.id, gift.gift_name, self.id])
         return output
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

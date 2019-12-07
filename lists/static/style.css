@@ -21,14 +21,14 @@ thead{
   margin-top:0.5em
 }
 #aval_gifts{
-  max-height:200px;
+  max-height:160px;
   overflow-y: auto;
   /* width:100% */
 }
 .gift_bubble{
   margin:4px;
-  border:1px rgb(252, 87, 87) solid;
-  padding:6px;
+  border:2px rgb(252, 87, 87) solid;
+  padding:2px 6px;
   border-radius: 25px;
 }
 
@@ -58,8 +58,11 @@ thead{
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 90%;
   }
   .card-text.gift_name{
     border-bottom:gray 0.5px solid;
+  }
+  .gift_slot{
+    margin-top:.5em;
   }
