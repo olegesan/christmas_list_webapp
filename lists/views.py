@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from .models import Profile, Gift, Family
 import random, json
+from django.contrib import messages
+from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 def index(request):
     return render(request, './index.html')
@@ -16,37 +19,40 @@ def signup(request):
     if 'start' in request.path:
         ## load a signup for a family page
         if request.method == 'GET':
-            print('family')
             return render(request, './signup/start_family.html')
         ## process logic for creating a family and the head of teh family user
         elif request.method == 'POST':
-            print('creating a family')
-            username = request.POST['username']
-            password = request.POST['password']
-            email = request.POST['email']
-            first_name = request.POST['first_name']
-            last_name = request.POST['last_name']
-            family_name = request.POST['family_name']
-            family_code=request.POST['family_code']
-            number_of_gifts = request.POST['number_of_gifts']
-            print(request.POST)
-            user=''
-            user = User.objects.create_user(username,email,password)
-            family = Family.objects.create(number_of_gifts=number_of_gifts,last_name=family_name,family_code=family_code, family_head = user)
-            # 
-            user.profile.family_head = 1
-            user.profile.last_name = last_name
-            user.profile.email = email
-            user.profile.first_name = first_name
-            auth_user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request,auth_user)
-            family.members.set((user.id,))
-            family.save()
-            user.profile.family = family
-            user.save()
-            return render(request, './index.html')
-
+            try:
+                # creating a family
+                username = request.POST['username']
+                password = request.POST['password']
+                email = request.POST['email']
+                first_name = request.POST['first_name']
+                last_name = request.POST['last_name']
+                family_name = request.POST['family_name']
+                family_code=request.POST['family_code']
+                number_of_gifts = request.POST['number_of_gifts']
+                # creating a user
+                user=''
+                user = User.objects.create_user(username,email,password)
+                family = Family.objects.create(number_of_gifts=number_of_gifts,last_name=family_name,family_code=family_code, family_head = user)
+                # 
+                user.profile.family_head = 1
+                user.profile.last_name = last_name
+                user.profile.email = email
+                user.profile.first_name = first_name
+                auth_user = authenticate(request, username=username, password=password)
+                if user is not None:
+                    login(request,auth_user)
+                family.members.set((user.id,))
+                family.save()
+                user.profile.family = family
+                user.save()
+                return render(request, './index.html')
+            except IntegrityError as e:
+                if 'username' in e.args[0]:
+                    messages.error(request, 'This username has already been occupied, try another one.')
+                return HttpResponse(request, status=400)
     ## signup to join an existing family
     elif 'join' in request.path:
         ##open join a family page
@@ -54,26 +60,34 @@ def signup(request):
             return render(request, './signup/join_family.html')
         #create a user to joing a family
         elif request.method == 'POST':
-            print('trying to join')
-            username = request.POST['username']
-            password = request.POST['password']
-            email = request.POST['email']
-            first_name = request.POST['first_name']
-            last_name = request.POST['last_name']
-            family_code=request.POST['family_code']
-            family = Family.objects.get(family_code=family_code)
-            user = User.objects.create_user(username,email,password)
-            user.profile.last_name = last_name
-            user.profile.email = email
-            user.profile.first_name = first_name
-            auth_user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request,auth_user)
-            family.members.add(user.id)
-            family.save()
-            user.profile.family = family
-            user.save()
-            return render(request, './index.html')
+            try:
+                print('trying to join')
+                username = request.POST['username']
+                password = request.POST['password']
+                email = request.POST['email']
+                first_name = request.POST['first_name']
+                last_name = request.POST['last_name']
+                family_code=request.POST['family_code']
+                family = Family.objects.get(family_code=family_code)
+                user = User.objects.create_user(username,email,password)
+                user.profile.last_name = last_name
+                user.profile.email = email
+                user.profile.first_name = first_name
+                auth_user = authenticate(request, username=username, password=password)
+                if user is not None:
+                    login(request,auth_user)
+                family.members.add(user.id)
+                family.save()
+                user.profile.family = family
+                user.save()
+                return render(request, './index.html')
+            except IntegrityError as e:
+                if 'username' in e.args[0]:
+                    messages.error(request, 'This username has already been occupied, try another one.')
+                return HttpResponse(request, status=400)
+            except ObjectDoesNotExist as e:
+                messages.error(request, 'Incorrect family code, try again')
+                return HttpResponse(request, status=400)
 def login_page(request):
     if request.method == "GET":
         return render(request, './login.html')
@@ -82,12 +96,16 @@ def login_page(request):
         password = request.POST['password']
         try:
             auth_user = authenticate(request, username=username, password=password)
-            print(auth_user)
+            # print(auth_user)
             if auth_user != None:
                 login(request, auth_user)
+                return render(request,'./index.html')
+            else:
+                messages.error(request, 'Incorrect Login or Password')
+                return render(request,'./login.html')
         except:
-            print('something went wrong')
-        return render(request,'./index.html')
+            messages.error(request, 'Some error occured')
+            return render(request,'./login.html')
 def logout_func(request):
     logout(request)
     return render(request,'./index.html')
@@ -125,10 +143,10 @@ def add_gifts(request, user=None):
             gift.save()
             user.profile.gifts.add(gift)
             family.family_gifts.add(gift)
-            print(gift)
-        print(user.profile.gifts.all())
-        print(family.family_gifts)
-        print(gifts)
+        #     print(gift)
+        # print(user.profile.gifts.all())
+        # print(family.family_gifts)
+        # print(gifts)
         return HttpResponse(status=200)
 def random_gifts(request, user=None):
     data = QueryDict(request.body)
