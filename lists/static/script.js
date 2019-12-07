@@ -46,7 +46,10 @@ function req_field(){
 }
 $('.submit').click(function(){
     if(!req_field()){
-        $('.message').text('complete all the fields')
+        message =  `<div class="alert alert-danger alert-dismissible fade show" role="alert">Complete all the fields<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button></div>`
+        $('.messages').html(message)
         return
     }
     
@@ -76,12 +79,10 @@ $('.submit').click(function(){
             }
         })
         .done(function(data){
-            console.log('success starting')
-            console.log(data)
             location.href = '/'
         })
         .fail(function(data){
-            console.log('sorry, we let you down')
+            location.reload(true)
         })
     }
     else{
@@ -99,12 +100,11 @@ $('.submit').click(function(){
             }
         })
         .done(function(data){
-            console.log('success joining')
             location.href = '/'
 
         })
         .fail(function(data){
-            console.log('sorry, we let you down')
+            location.reload(true)
         })
     }
     
@@ -484,6 +484,6 @@ modal.on('click','.save', function(){
         }
     })
     .done(function(){
-        console.log('save')
+        location.reload(true)
     })
 })

@@ -30,6 +30,7 @@
                     </ul>   
               </div>
               {%else%}
+              {%if user.profile.family.members.count >= 2%}
               <button  href = '' id='random_gifts' class="btn btn-success" {%if user.profile.assigned_gifts.count > 0%} disabled {%endif%}>Random Gifts</button>
               <button  href = '' id='assign_gifts' class="btn btn-dark" >Assign Gifts</button>
               <button  href = '' id='clear_gifts' class="btn btn-danger">Clear Gifts</button>
@@ -37,6 +38,7 @@
               <button  href = '' id='reveal_names' class="btn btn-warning" {% if not user.profile.family.gifts_assigned > 0%} disabled{%endif%}>Reveal Names</button>
               {%else%}
               <button  href = '' id='hide_names' class="btn btn-danger" >Hide Names</button>
+              {%endif%}
               {%endif%}
               {%endif%}
             </div>
