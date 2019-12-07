@@ -11,6 +11,8 @@ urlpatterns = [
     path('add_gifts', views.add_gifts, name = 'add_gifts'),
     path('random_gifts', views.random_gifts, name = 'random_gifts'),
     path('reveal_names', views.reveal_names, name='reveal_names'),
+    path('hide_names', views.hide_names, name='hide_names'),
+    path('assign_gifts', views.assign_gifts, name='assign_gifts'),
     # path('some_button', views.some_button, name='some_button'),
     path('<str:user>', views.profile, name = 'profile'),
     

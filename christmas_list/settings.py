@@ -25,7 +25,8 @@ SECRET_KEY = 'cl@xe$rt&i%o7zafalvd78@l+5$gtje^s!4*p7&vz&g_==ovdf'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['bazz-christmas-list.herokuapp.com']
+ALLOWED_HOSTS = ['bazz-christmas-list.herokuapp.com',
+'127.0.0.1']
 
 
 # Application definition

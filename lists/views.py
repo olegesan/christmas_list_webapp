@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from .models import Profile, Gift, Family
-import random
+import random, json
 # Create your views here.
 def index(request):
     return render(request, './index.html')
@@ -142,7 +142,7 @@ def random_gifts(request, user=None):
     family_check = {}
     # populating family_check
     for member in family_members:
-        # family_check[member]= {"assigned_gifts":[]}
+        family_check[member]= {"assigned_gifts":[]}
         family_check[member]["assigned_gifts_count"]=0
         family_check[member]["gifts_left"]=number_of_gifts
         for other_member in family_members:
@@ -186,6 +186,8 @@ def random_gifts(request, user=None):
                         gift.giver = giver
                         gift.save()
                         giver.profile.assigned_gifts.add(gift)
+    family.gifts_assigned = True
+    family.save()
     return HttpResponse(status=200)
 def reveal_names(request, user=None):
     data = QueryDict(request.body)
@@ -194,38 +196,92 @@ def reveal_names(request, user=None):
     try:
         family.reveal_names = True
         family.save()
-        print(family.reveal_names)
         return HttpResponse(status=200)
     except:
         return HttpResponse(status=404)
-# def some_button(request):
-#     if request.is_ajax():
-#         values = request.POST.getlist('values[]')
-#         for value in values:
-#             print(value)
-#         print(values)
+def hide_names(request, user=None):
+    data = QueryDict(request.body)
+    family_id = data['family_id']
+    print(family_id)
+    family = Family.objects.get(pk=family_id)
+    try:
+        family.reveal_names = False
+        family.save()
+        return HttpResponse(status=200)
+    except:
+        return HttpResponse(status=404)
+def assign_gifts(request, user=None):
+    if request.method == 'GET':
+        data = request.GET
+        family_id = data['family_id']
+        # print(dir(request.GET))
+        # print(data)
+        family = Family.objects.get(pk=family_id)
+        gifts = family.get_family_gifts()
+        member_ids = []
+        available_gifts = family.get_aval_gifts()
+        print(available_gifts)
+        family_members = {}
+        for member in family.members.all():
+            family_members[member.id]={}
+            family_members[member.id]['assigned_gifts']=member.profile.get_assigned_gifts()
+            family_members[member.id]['own_gifts']=member.profile.get_own_gifts()
+            family_members[member.id]['name']=member.profile.name()
+            family_members[member.id]['id']=member.id
+            member_ids.append(member.id)
+        data = {
+            'family_members':family_members,
+            'available_gifts':available_gifts,
+            'number_of_gifts':family.number_of_gifts,
+            'member_ids':member_ids,
+            'gifts':gifts,
+        }
+        response = JsonResponse(data)
+        return HttpResponse(response, status=200)
+        # availible_gifts = 
+    elif request.method == 'POST':
+        # data = QueryDict(request.body)
+        data = json.loads(request.POST['data'])
+        family_id = request.POST['family_id']
+        family = Family.objects.get(pk=family_id)
+        # print(data)
+        for member in family.members.all():
+            # check if the person was assigned max amount of gifts
+                for gift_info in data['family_members'][f'{member.id}']['assigned_gifts']:
+                    gift = Gift.objects.get(pk=gift_info[0])
+                    gift.giver = member
+                    gift.save()
+                    if gift not in member.profile.assigned_gifts.all():
+                        member.profile.assigned_gifts.add(gift)
+                        member.save()
 
-# try something new
-# def random_gifts(request, user=None):
-#     data = QueryDict(request.body)
-#     # print(request.body)
-#     family_id = data['family_id']
-#     family = Family.objects.get(pk=family_id)
-#     family_gifts =  family.family_gifts.all()
-#     # family_gifts_ids = list()
-#     family_members = family.members.all()
-#     family_check = {}
-#     for member in family_members:
-#         family_check[member]= {}
-#         for other_member in family_members:
-#             if other_member != member:
-#                 family_check[member][other_member]=0
-#     for gift in family_gifts:
-#         checker = True
-#         while checker:
-#             member = random.choice(family_members.all())
-#             try:
-#                 member.gifts.get(pk=gift.id)
-#             except:
-#             checker = False
-#     number_of_gifts = family.number_of_gifts
+        # unassigning all available gifts
+        for gift in data['available_gifts']:
+            gift = Gift.objects.get(pk=gift[0])
+            try:
+                giver = gift.giver
+                giver.profile.assigned_gifts.remove(gift)
+                gift.giver = None
+                giver.save()
+            except:
+                pass
+            gift.save()
+        if data['available_gifts']:
+            family.gifts_assigned=False
+        else:
+            family.gifts_assigned=True
+        family.save()
+    elif request.method == "DELETE":
+        data = QueryDict(request.body)
+        print(data)
+        family_id = data['family_id']
+        family = Family.objects.get(pk=family_id)
+        for member in family.members.all():
+            for gift in member.profile.assigned_gifts.all():
+                gift_id = gift.id
+                gift.giver=None
+                gift.save()
+                member.profile.assigned_gifts.remove(gift_id)
+        family.gifts_assigned=False
+        family.save()
+    return HttpResponse(status=200)
