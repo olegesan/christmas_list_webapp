@@ -236,26 +236,52 @@ function upd_aval_gifts_div(user_id){
     }
     modal.find("#aval_gifts").html(div_html)
 }
+
+//adding options for select Gift slots
+function add_options_select_gifts(gift_id, selected_slot){
+    if(gift_id!='None'){
+        gift_name = data['gifts'][gift_id][1]
+        option = `<option value=${gift_id}>${gift_name}</option>`
+        modal.find('.gift_slot').each(function(){
+            if($(this).val()==selected_slot.val()){
+            }
+            else{
+                $(this).append(option)
+            }
+        })
+    }
+}
+// removing options when chosen from available gifts
+function del_options_selected_gifts(gift_id){
+    if(gift_id!='None'){
+        modal.find(`option[value=${gift_id}]`).each(function(){
+            if(!$(this).prop('selected')){
+                $(this).remove()
+            }
+            
+        })
+    }
+}
 //populating selected/availible gifts for the person
-function get_selected_gifts(user_id){
+function get_gift_slots(user_id){
     own_gifts = data['family_members'][user_id]['own_gifts']
     assigned_gifts = data['family_members'][user_id]['assigned_gifts']
     available_gifts = data['available_gifts']
     gifts= data['gifts']
-    selected_gifts=[]
+    selected_attr_gifts=[]
     select_element = ''
-    alien_gifts_for_user=function(){
+    gift_slots=function(){
         for(b=0; b<data['number_of_gifts'];b++){
             select_element+=`<select class='gift_slot'>`
             // checking if gifts have been already assigned
             // if assigned, then just show assigned select option + Not Assigned slot, to disassign the gift
             if(assigned_gifts.length!=data['number_of_gifts']){
-                console.log('our condition')
+                console.log('Assigned gifts number:'+assigned_gifts.length+' Total Gifts:'+data['number_of_gifts'])
                 if(b<assigned_gifts.length){
-                    console.log(assigned_gifts, b)
+                    console.log(`Selected gift: ${assigned_gifts}`)
                     select_element+=`<option value =${assigned_gifts[b][0]} selected>${assigned_gifts[b][1]}</option>` 
                     select_element+=`<option value ='None'>(Not Assigned)</option>`
-                    selected_gifts.push(assigned_gifts[b][0])
+                    selected_attr_gifts.push(assigned_gifts[b][0])
                 }
                 else{
                     select_element+=`<option value ='None' selected>(Not Assigned)</option>`
@@ -278,10 +304,10 @@ function get_selected_gifts(user_id){
                 selected_element=false
                 for(i=0; i<available_gifts.length;i++){
                     if(available_gifts[i][2]!=user_id){
-                        if(available_gifts[i][3]==user_id & !selected_element & !selected_gifts.includes(available_gifts[i][0])){
+                        if(available_gifts[i][3]==user_id & !selected_element & !selected_attr_gifts.includes(available_gifts[i][0])){
                             select_element+=`<option value =${available_gifts[i][0]} selected>${available_gifts[i][1]}</option>`
                             selected_element=true
-                            selected_gifts.push(available_gifts[i][0])
+                            selected_attr_gifts.push(available_gifts[i][0])
                         }
                         else{
                             select_element+=`<option value =${available_gifts[i][0]}>${available_gifts[i][1]}</option>`
@@ -289,14 +315,14 @@ function get_selected_gifts(user_id){
                         
                     }
                 }
-                if(selected_gifts.length==0){
+                if(selected_attr_gifts.length==0){
                     select_element+=`<option value ='None' selected>(Not Assigned)</option>`
                 }
             }
             select_element+="</select>"
         }
     }
-    alien_gifts_for_user()
+    gift_slots()
     return select_element
 }
 // 
@@ -330,7 +356,7 @@ $('#assign_gifts').click(function(){
         for(i=0;i<data['member_ids'].length;i++){
             member_id = data['member_ids'][i]
             name = data['family_members'][member_id]['name']
-            members+= `<option val=${member_id}>${name}</option>`
+            members+= `<option value=${member_id}>${name}</option>`
         }
         // 
 
@@ -354,7 +380,7 @@ $('#assign_gifts').click(function(){
         </select>
         </div>
         <div class='gift_pick_container d-flex flex-column'>
-        ${get_selected_gifts(data['member_ids'][0])}
+        ${get_gift_slots(data['member_ids'][0])}
         </div>
         <div class='d-flex justify-content-between mt-3'>
         <span class='col-5 cancel btn btn-danger'>cancel</span>
@@ -366,8 +392,8 @@ $('#assign_gifts').click(function(){
 
 // logic to change gift slots for person in gift assign menu
 modal.on( 'change','#member_to_assign', function(){
-    user_selected_id = $(this).children("option:selected").attr('val')
-    gifts = get_selected_gifts(user_selected_id)
+    user_selected_id = $(this).children("option:selected").val()
+    gifts = get_gift_slots(user_selected_id)
     modal.find('.gift_pick_container').html(gifts)
     upd_aval_gifts_div(user_selected_id)
 })
@@ -383,7 +409,7 @@ modal.on( 'click','.gift_slot', function(){
 modal.on( 'change','.gift_slot', function(){
     gift_name = $(this).children('option:selected').text()
     selected_gift_id = $(this).children('option:selected').val()
-    user_selected_id = modal.find('#member_to_assign').children("option:selected").attr('val')
+    user_selected_id = modal.find('#member_to_assign').children("option:selected").val()
     // console.log(user_selected_id)
     
     //dynamically change available gifts div - adding new divs
@@ -398,6 +424,7 @@ modal.on( 'change','.gift_slot', function(){
         }
         // not adding it if the gift is already there
         if(!data['available_gifts'].includes(temp_gift_info)){
+            console.log('not adding stuff to div')
             aval_gift_div+=`<div id='gift_${data['temp_gift_id']}'class='gift_bubble'>${data['temp_gift_name']}</div>`
             modal.find('#aval_gifts').append(aval_gift_div)
             data['available_gifts'].push(temp_gift_info)
@@ -411,25 +438,23 @@ modal.on( 'change','.gift_slot', function(){
     selected_gift_info=null
     if(selected_gift_id!='None'){
         selected_gift_info = data['gifts'][selected_gift_id]
-        if(data['available_gifts'].includes(selected_gift_info)){
-            console.log(data['available_gifts'])
-            data['available_gifts']= data['available_gifts'].filter( arr => JSON.stringify(arr)!=JSON.stringify(selected_gift_info))
+        if(JSON.stringify(data['available_gifts']).includes(JSON.stringify(selected_gift_info))){
+            data['available_gifts'] = data['available_gifts'].filter( arr => JSON.stringify(arr)!=JSON.stringify(selected_gift_info))
             data['family_members'][user_selected_id]['assigned_gifts'].push(selected_gift_info)
-            console.log(data['available_gifts'])
-            console.log(data['gifts'][selected_gift_id])
             data['gifts'][selected_gift_id].push(user_selected_id)
-            console.log(data['gifts'][selected_gift_id])
             modal.find(`#gift_${selected_gift_id}`).remove()
         }
     }
     //
-
+    gift_slot_obj = $(this)
     // data['gifts'] = data['gifts'].filter(arr => arr[0]!=selected_gift_id)
     console.log(data['family_members'][user_selected_id]['assigned_gifts'])
     // data['family_members'][user_selected_id]['assigned_gifts'].push([selected_gift_id, gift_name])
     upd_aval_gifts_div(user_selected_id)
-    gifts = get_selected_gifts(user_selected_id)
-    modal.find('.gift_pick_container').html(gifts)
+    del_options_selected_gifts(selected_gift_id)
+    add_options_select_gifts(temp_gift_id, gift_slot_obj)
+    // gifts = get_gift_slots(user_selected_id)
+    // modal.find('.gift_pick_container').html(gifts)
 })
 
 // clear assingment of all family_gifts
