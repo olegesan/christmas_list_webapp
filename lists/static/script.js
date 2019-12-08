@@ -400,7 +400,7 @@ modal.on( 'change','#member_to_assign', function(){
     upd_aval_gifts_div(user_selected_id)
 })
 
-modal.on( 'click','.gift_slot', function(){
+modal.on( 'focus','.gift_slot', function(){
     temp_gift_id = $(this).val()
     data['temp_gift_id']=$(this).val()
     data['temp_gift_name']=$(this).children('option:selected').text()
