@@ -24,3 +24,10 @@ Welcome, **Christmas List Webapp**:
 6. Enjoy!
 
  
+Testing Data:
+**family_head**:
+ - username: stan
+ - password: stan
+**family_member**:
+ - username: joel
+ - password: joel
