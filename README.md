@@ -1,5 +1,5 @@
 # Christmas List 
-> webapp
+> webapp*
 
 Have you ever had a discussion with your family how you will give the gifts within your big family? I bet you simply used paper, jut like your great grandparents back in the day without computers. 
 
@@ -31,3 +31,7 @@ Testing Data:
 **family_member**:
  - username: joel
  - password: joel
+
+
+
+*Designed for mobile devices first
