@@ -32,6 +32,7 @@ Testing Data:
  - username: joel
  - password: joel
 
+Deployed at https://bazz-christmas-list.herokuapp.com/
 
 
 
