@@ -11,7 +11,7 @@ Welcome, **Christmas List Webapp**:
 
 - Set up the number of gifts per person;
 - Randomly assign gifts without any busy work
-- If you want to have control over everything, then manually assign or reassign gits for any family member
+- If you want to have control over everything, then manually assign or reassign gifts for any family member
 - Reveal names whenver it is convenient for you
 
 # How to use:
@@ -28,6 +28,7 @@ Testing Data:
 **family_head**:
  - username: stan
  - password: stan
+ 
 **family_member**:
  - username: joel
  - password: joel
